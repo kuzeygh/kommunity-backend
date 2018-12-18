@@ -45,6 +45,7 @@ export default gql`
     location: String
     avatarUploadUuid: ID
     lastSeenAt: Date
+    token: String
   }
 
   type UserDetails {

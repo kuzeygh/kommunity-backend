@@ -180,7 +180,7 @@ export default class App {
     const serverConf = {
       typeDefs: gqlSchema,
       resolvers: gqlResolvers(this),
-      context: ({ req }) => ({ ...req }),
+      context: ({ req }) => req.user,
     };
 
     /* TODO: authenticate users in the resolvers
