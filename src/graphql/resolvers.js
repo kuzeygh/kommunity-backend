@@ -1,5 +1,7 @@
 import type App from '$/lib/app';
 import uuid from 'uuid';
+import md5 from 'md5';
+import jwt from 'jsonwebtoken';
 
 const COMMUNITY_VISIBILITY_PUBLIC = 'public';
 
@@ -87,6 +89,38 @@ export default (app: App) => {
         visibility: args.visibility,
       });
     },
+    login: async (parent: {}, args: {
+      email: string,
+      password: string
+    }, ctx) => {
+      // 1. check if there is a user with that email
+      const user = await app.models.User.findOne({
+        where: { email: args.email },
+      });
+      if (!user) {
+        throw new Error(`No such user found for email ${args.email}`);
+      }
+      // 2. check if their password is correct
+      let valid = true;
+
+      if (md5(args.password) !== user.passwordHash) {
+        valid = false;
+      }
+
+      if (!valid) {
+        throw new Error('Invalid password');
+      }
+      // 3. generate the jwt token
+      // todo: we have to create variable name like app_secret for second argument.
+      const token = jwt.sign({ userId: user.uuid }, 'mustafa');
+      // 4. set the cookie with the token
+      ctx.res.cookie('token', token, {
+        httpOnly: false,
+        maxAge: 1000 * 60 * 60 * 24 * 365, // 1 year
+      });
+      // 5. return the user
+      return user;
+    }
   };
 
   return {

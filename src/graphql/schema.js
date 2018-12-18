@@ -54,7 +54,7 @@ export default gql`
     avatarUploadUuid: ID
     lastSeenAt: Date
   }
-  
+
   type Community {
     uuid: String
     name: String
@@ -86,12 +86,13 @@ export default gql`
 
   type Mutation {
     createCommunity(
-      name: String, 
-      tagline: String, 
-      desc: String, 
-      location: String, 
-      tier: CommunityTier, 
+      name: String,
+      tagline: String,
+      desc: String,
+      location: String,
+      tier: CommunityTier,
       visibility: CommunityType,
       ) : Community
+    login(email: String!, password: String!) : LoggedInUserDetails!
   }
 `;
