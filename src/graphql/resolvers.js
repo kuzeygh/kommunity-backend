@@ -120,7 +120,7 @@ export default (app: App) => {
       });
       // 5. return the user
       return user;
-    }
+    },
   };
 
   return {
