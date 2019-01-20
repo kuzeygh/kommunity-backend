@@ -91,7 +91,7 @@ module.exports = (sequelize: Sequelize, dataTypes: DataTypes) => {
   });
 
   User.associate = (models) => {
-    User.belongsToMany(models.Community, { through: models.CommunityUser });
+    User.belongsToMany(models.Community, { as: 'communities', through: models.CommunityUser });
   };
 
   return User;

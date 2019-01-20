@@ -70,7 +70,7 @@ const items = [
     updated_at: new Date(),
   },
   {
-    uuid: '23e9da9c-d69d-11e8-9f8b-f2801f1b9fd1',
+    uuid: '09fee196-1778-4a14-9437-04d45130d1a9',
     email: 'test06@test.com',
     password_hash: 'e10adc3949ba59abbe56e057f20f883e',
     first_name: 'Firstname',

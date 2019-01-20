@@ -58,7 +58,9 @@ declare type AppModels = {
   CommunityUser: any,
   ConversationCategory: any,
   ConversationPost: any,
-  UploadedItem: any
+  UploadedItem: any,
+  Message: any,
+  Channel: any,
 };
 
 declare class exExpress$Request extends express$Request {

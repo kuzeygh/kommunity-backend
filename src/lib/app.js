@@ -3,14 +3,17 @@ import * as http from 'http';
 import type { Server } from 'http';
 import get from 'lodash/get';
 import path from 'path';
+import { execute, subscribe } from 'graphql';
 import Express from 'express';
 import Sequelize from 'sequelize';
 import { ApolloServer } from 'apollo-server-express';
 import Cors from 'cors';
 import CookieParser from 'cookie-parser';
+import { makeExecutableSchema } from 'graphql-tools';
 import Morgan from 'morgan';
 import Passport from 'passport';
 import type { Sentry } from '@sentry/node';
+import { SubscriptionServer } from 'subscriptions-transport-ws';
 import helmet from 'helmet';
 import config from '$/config';
 import { getAllFiles } from './helpers';
@@ -177,11 +180,12 @@ export default class App {
 
   initGqlServer = (express: express$Application): void => {
     const that = this;
-    const serverConf = {
-      typeDefs: gqlSchema,
-      resolvers: gqlResolvers(this),
+    const schemaConf = {
       context: ({ req }) => req.user,
+      resolvers: gqlResolvers(this),
+      typeDefs: gqlSchema,
     };
+    const schema = makeExecutableSchema(schemaConf);
 
     /* TODO: authenticate users in the resolvers
     import authenticationMiddleware from '$/middlewares/auth';
@@ -203,15 +207,25 @@ export default class App {
     });
      */
 
-    const server = new ApolloServer(serverConf);
+    const server = new ApolloServer(schemaConf);
     server.applyMiddleware({ app: express, path: this.config.gqlServer.rootPath });
 
     if (process.env.NODE_ENV !== 'production') {
-      const playgroundServer = new ApolloServer(serverConf);
+      const playgroundServer = new ApolloServer(schemaConf);
       playgroundServer.applyMiddleware({ app: express, path: this.config.gqlServer.playgroundPath });
     }
 
     express.listen({ port: this.config.gqlServer.port }, () => {
+      // eslint-disable-next-line no-new
+      new SubscriptionServer({
+        execute,
+        subscribe,
+        schema,
+        // TODO use onConnect to validate user
+      }, {
+        server: this.server,
+        path: '/graphql-subscriptions',
+      });
       console.log(`GRAPHQL 🚀  Server ready at http://localhost:${that.config.gqlServer.port}${that.config.gqlServer.rootPath}`);
       console.log(`GRAPHQL ✨  Playground server ready at http://localhost:${that.config.gqlServer.port}${that.config.gqlServer.playgroundPath}`);
     });

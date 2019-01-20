@@ -50,10 +50,13 @@ export default gql`
 
   type UserDetails {
     uuid: ID!
+    firstName: String
+    lastName: String
     username: String
     location: String
     avatarUploadUuid: ID
     lastSeenAt: Date
+    CommunityUser: CommunityUser
   }
 
   type Community {
@@ -64,7 +67,14 @@ export default gql`
     location: String
     tier: CommunityTier
     visibility: CommunityType
-    Users: [UserDetails]
+    users: [UserDetails]
+  }
+
+  type CommunityUser {
+    communityUuid: String
+    userUuid: String
+    status: String
+    role: String
   }
 
   type PopularCommunity {
@@ -76,24 +86,72 @@ export default gql`
     userCount: Int
   }
 
+  type Message {
+    channelUuid: String
+    uuid: String
+    sender: UserDetails
+    text: String
+    createdAt: Date
+  }
+
+  type Channel {
+    communityUuid: String
+    uuid: String
+    name: String
+    desc: String
+  }
+
+  type ChannelMessages {
+    nextCursor: Int
+    messages: [Message]
+  }
+
   type Query {
-    getLoggedInUserDetails : LoggedInUserDetails
+    getChannels(communityUUID: String!): [Channel]
+    getMessagesForChannel(channelUUID: String!, cursor: Int): ChannelMessages
+    getCommunityMembers(uuid: ID!): Community
+    getLoggedInUserDetails: LoggedInUserDetails
     getUserDetailsByUuid(uuid: ID!): UserDetails
     getLoggedInUserCommunities: [Community]
     getUserCommunitiesByUuid(uuid: ID!): [Community]
     searchCommunities(name: String!): [Community]
+    searchUsers(queryText:String!): [UserDetails]
     popularCommunities: [PopularCommunity]
   }
 
   type Mutation {
     createCommunity(
-      name: String,
-      tagline: String,
-      desc: String,
-      location: String,
-      tier: CommunityTier,
-      visibility: CommunityType,
-      ) : Community
+      name: String
+      tagline: String
+      desc: String
+      location: String
+      tier: CommunityTier
+      visibility: CommunityType
+    ): Community
+    createUser(
+      email: String
+      password: String
+      username: String
+      firstName: String
+      lastName: String
+      userAttributes: String
+      location: String
+    ): UserDetails
+    sendMessage(
+      channelUUID: String
+      senderUUID: String,
+      text: String,
+    ): Message
+
     login(email: String!, password: String!) : LoggedInUserDetails!
+    signup(
+      email: String!, 
+      password: String!, 
+      captchaResponse: String!
+    ): String
+  }  
+
+  type Subscription {
+    messageSent(channelUUID: String!): Message
   }
 `;
